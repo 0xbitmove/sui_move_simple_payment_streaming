@@ -21,6 +21,7 @@ module bitmove::simple_payment_streaming {
     const ESenderCannotBeReceiver: u64 = 0;
     const EPaymentMustBeGreaterThanZero: u64 = 1;
     const EDurationMustBeGreaterThanZero: u64 = 2;
+    const EPassTimeMustBeGreaterThanZero: u64 = 3;
 
     //==============================================================================================
     //                                  Module structs 
@@ -164,6 +165,7 @@ module bitmove::simple_payment_streaming {
         let current_time_seconds = clock::timestamp_ms(clock) / Second;
 
         let pass_time_seconds = current_time_seconds - stream.last_timestamp_claimed_seconds;
+        assert!(pass_time_seconds > 0, EPassTimeMustBeGreaterThanZero);
 
         let stream_amount_value = balance::value(&stream.amount);
 
@@ -230,6 +232,7 @@ module bitmove::simple_payment_streaming {
         let current_time_seconds = clock::timestamp_ms(clock) / Second;
 
         let pass_time_seconds = current_time_seconds - stream.last_timestamp_claimed_seconds;
+        assert!(pass_time_seconds > 0, EPassTimeMustBeGreaterThanZero);
 
         let stream_amount_value = balance::value(&stream.amount);
 
@@ -294,5 +297,10 @@ module bitmove::simple_payment_streaming {
 
     public fun get_stream_amount<PaymentCoin>(stream: &Stream<PaymentCoin>): &Balance<PaymentCoin> {
         &stream.amount
+    }
+
+    public fun get_stream_amount_value<PaymentCoin>(stream: &Stream<PaymentCoin>): u64 {
+        let balance = &stream.amount;
+        balance::value(balance)
     }
 }
