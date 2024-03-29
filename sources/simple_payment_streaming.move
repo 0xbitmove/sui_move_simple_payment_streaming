@@ -210,6 +210,16 @@ module bitmove::simple_payment_streaming {
         claim_amount_coin
     }
 
+    public entry fun claim_stream_to_receiver<PaymentCoin>(
+        stream: Stream<PaymentCoin>, 
+        clock: &Clock, 
+        ctx: &mut TxContext
+    ) {
+        let claim_amount_coin = claim_stream<PaymentCoin>(stream, clock, ctx);
+        let recipient = tx_context::sender(ctx);
+        transfer::public_transfer(claim_amount_coin, recipient);
+    }
+
     /* 
         Closes the stream. If the stream is still active, the amount claimed is calculated based on 
         the time since the last claim. If the stream is closed, the remaining amount is claimed. The
@@ -280,6 +290,16 @@ module bitmove::simple_payment_streaming {
         claim_amount_coin
     }
 
+    public entry fun close_stream_to_receiver<PaymentCoin>(
+        stream: Stream<PaymentCoin>, 
+        clock: &Clock, 
+        ctx: &mut TxContext
+    ) {
+        let claim_amount_coin = close_stream<PaymentCoin>(stream, clock, ctx);
+        let recipient = tx_context::sender(ctx);
+        transfer::public_transfer(claim_amount_coin, recipient);
+    }
+
     public fun get_stream_sender<PaymentCoin>(stream: &Stream<PaymentCoin>): address {
         stream.sender
     }
@@ -294,5 +314,10 @@ module bitmove::simple_payment_streaming {
 
     public fun get_stream_amount<PaymentCoin>(stream: &Stream<PaymentCoin>): &Balance<PaymentCoin> {
         &stream.amount
+    }
+
+    public fun get_stream_amount_value<PaymentCoin>(stream: &Stream<PaymentCoin>): u64 {
+        let balance = &stream.amount;
+        balance::value(balance)
     }
 }
